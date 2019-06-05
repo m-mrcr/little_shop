@@ -34,7 +34,6 @@ RSpec.describe "Cart show page" do
 
       visit cart_path
 
-      save_and_open_page
       within("#address-#{address.id}") do
         expect(page).to have_link("Check Out With This Address")
       end
