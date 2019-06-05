@@ -4,6 +4,10 @@ class Address < ApplicationRecord
 
   #relationships
     belongs_to :user
-    has_many :orders
+    has_many :orders, dependent: :destroy
 
+  #helper_methods
+  def restricted?
+    !orders.where(status: "pending").any? if orders != []
+  end
 end
