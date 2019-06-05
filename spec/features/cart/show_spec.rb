@@ -9,6 +9,37 @@ RSpec.describe "Cart show page" do
     @item_3 = create(:item, user: @merchant_2)
   end
 
+  context "addresses at checkout" do
+    it "as a visitor, you must register or log in to check out" do
+      visit item_path(@item_3)
+      click_on "Add to Cart"
+      visit item_path(@item_3)
+      click_on "Add to Cart"
+
+      visit cart_path
+      expect(page).to have_content("You must register or log in to check out")
+      expect(page).to have_link("register")
+      expect(page).to have_link("log in")
+    end
+
+    it "as a regular user, if you have address(es) on file, you may choose from them" do
+      user = create(:user)
+      address = create(:address, user: user)
+      login_as(user)
+
+      visit item_path(@item_3)
+      click_on "Add to Cart"
+      visit item_path(@item_3)
+      click_on "Add to Cart"
+
+      visit cart_path
+
+      within("#address-#{address.id}") do
+        expect(page).to have_link("Check Out With This Address")
+      end
+    end
+  end
+
   context "a regular user or visitor sees their cart summary" do
     scenario "as a regular user" do
       user = create(:user)
@@ -190,5 +221,6 @@ RSpec.describe "Cart show page" do
 
       expect(page).to_not have_css("#item-#{@item_3.id}")
     end
+
   end
 end

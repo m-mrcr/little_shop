@@ -12,6 +12,9 @@ RSpec.describe 'Profile Orders page', type: :feature do
 
     @item_1 = create(:item, user: @merchant_1)
     @item_2 = create(:item, user: @merchant_2)
+
+    @address_1 = create(:address, user: @user)
+    @address_2 = create(:address, user: @user, nickname: "work")
   end
 
   context 'as a registered user' do
@@ -27,7 +30,7 @@ RSpec.describe 'Profile Orders page', type: :feature do
     describe 'should show information about each order when I do have orders' do
       before :each do
         yesterday = 1.day.ago
-        @order = create(:order, user: @user, created_at: yesterday)
+        @order = create(:order, user: @user, created_at: yesterday, address: @address_1)
         @oi_1 = create(:order_item, order: @order, item: @item_1, price: 1, quantity: 1, created_at: yesterday, updated_at: yesterday)
         @oi_2 = create(:fulfilled_order_item, order: @order, item: @item_2, price: 2, quantity: 1, created_at: yesterday, updated_at: 2.hours.ago)
       end
@@ -55,7 +58,7 @@ RSpec.describe 'Profile Orders page', type: :feature do
     describe 'should show a single order show page' do
       before :each do
         yesterday = 1.day.ago
-        @order = create(:order, user: @user, created_at: yesterday)
+        @order = create(:order, user: @user, created_at: yesterday, address: @address_1, status: "pending")
         @oi_1 = create(:order_item, order: @order, item: @item_1, price: 1, quantity: 3, created_at: yesterday, updated_at: yesterday)
         @oi_2 = create(:fulfilled_order_item, order: @order, item: @item_2, price: 2, quantity: 5, created_at: yesterday, updated_at: 2.hours.ago)
       end
@@ -71,6 +74,12 @@ RSpec.describe 'Profile Orders page', type: :feature do
         expect(page).to have_content("Created: #{@order.created_at}")
         expect(page).to have_content("Last Update: #{@order.updated_at}")
         expect(page).to have_content("Status: #{@order.status}")
+        
+        within "#address-#{@address_2.id}" do
+          expect(page).to have_content("#{@address_2.nickname} - #{@address_2.street}, #{@address_2.city}, #{@address_2.state} #{@address_2.zip}")
+          expect(page).to have_button("Change Shipping to this Address")
+        end
+
         within "#oitem-#{@oi_1.id}" do
           expect(page).to have_content(@oi_1.item.name)
           expect(page).to have_content(@oi_1.item.description)
